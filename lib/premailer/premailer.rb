@@ -52,7 +52,14 @@ class Premailer
     'p' => {'text-align' => 'align'},
     'div' => {'text-align' => 'align'},
     'blockquote' => {'text-align' => 'align'},
-    'body' => {'background-color' => 'bgcolor'},
+    'body' => {
+      'background-color' => 'bgcolor',
+      '-premailer-leftmargin' => 'leftmargin',
+      '-premailer-marginheight' => 'marginheight',
+      '-premailer-offset' => 'offset',
+      '-premailer-topmargin' => 'topmargin',
+      '-premailer-marginwidth' => 'marginwidth'
+     },
     'table' => {
       'background-color' => 'bgcolor',
       '-premailer-width' => 'width',
