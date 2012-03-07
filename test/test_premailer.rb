@@ -16,7 +16,7 @@ class TestPremailer < Premailer::TestCase
   end
 
   #def test_cyrillic_nokogiri_remote
-  #  if RUBY_VERSION =~ /1.9/ 
+  #  if RUBY_VERSION =~ /1.9/
   #    remote_setup('iso-8859-5.html', :adapter => :nokogiri) #, :encoding => 'iso-8859-5')
   #  	@premailer.to_inline_css
   #    assert_equal Encoding.find('ISO-8859-5'), @premailer.processed_doc.at('p').inner_html.encoding
@@ -31,7 +31,7 @@ class TestPremailer < Premailer::TestCase
   	premailer.to_inline_css
     assert_equal 'c&eacute;dille c&eacute; &amp; gar&ccedil;on gar&ccedil;on &agrave; &agrave; &nbsp; &amp;', premailer.processed_doc.at('p').inner_html
   end
-  
+
   def test_detecting_html
     [:nokogiri, :hpricot].each do |adapter|
       remote_setup('base.html', :adapter => adapter)
@@ -61,7 +61,7 @@ class TestPremailer < Premailer::TestCase
       assert_match /<br>/, @premailer.to_inline_css
     end
   end
-  
+
   def test_mailtos_with_query_strings
     html = <<END_HTML
     <html>
@@ -74,17 +74,17 @@ END_HTML
     [:nokogiri, :hpricot].each do |adapter|
 		  premailer = Premailer.new(html, :with_html_string => true, :link_query_string => qs, :adapter => adapter)
 		  premailer.to_inline_css
-	    assert_no_match /testing=123/, premailer.processed_doc.search('a').first.attributes['href'].to_s    
+	    assert_no_match /testing=123/, premailer.processed_doc.search('a').first.attributes['href'].to_s
 	  end
   end
-  
+
   def test_escaping_strings
     local_setup
-  
+
     str = %q{url("/images/test.png");}
     assert_equal("url(\'/images/test.png\');", Premailer.escape_string(str))
   end
-  
+
   def test_importing_local_css
     # , :hpricot
     [:nokogiri].each do |adapter|
@@ -92,8 +92,8 @@ END_HTML
 
       # noimport.css (print stylesheet) sets body { background } to red
       assert_no_match /red/, @doc.at('body').attributes['style'].to_s
-    
-      # import.css sets .hide to { display: none } 
+
+      # import.css sets .hide to { display: none }
       assert_match /display: none/, @doc.at('#hide01').attributes['style'].to_s
     end
   end
@@ -101,11 +101,11 @@ END_HTML
   def test_importing_remote_css
     [:nokogiri, :hpricot].each do |adapter|
       remote_setup('base.html', :adapter => adapter)
-  
+
       # noimport.css (print stylesheet) sets body { background } to red
       assert_no_match /red/, @doc.at('body')['style']
-    
-      # import.css sets .hide to { display: none } 
+
+      # import.css sets .hide to { display: none }
       assert_match /display: none/, @doc.at('#hide01')['style']
     end
   end
@@ -129,12 +129,12 @@ END_HTML
     assert Premailer.local_data?( StringIO.new('a') )
     assert Premailer.local_data?( '/path/' )
     assert !Premailer.local_data?( 'http://example.com/path/' )
-    
+
     # the old way is deprecated but should still work
     premailer = Premailer.new( StringIO.new('a') )
     assert premailer.local_uri?( '/path/' )
   end
-  
+
   def test_initialize_can_accept_io_object
     [:nokogiri, :hpricot].each do |adapter|
       io = StringIO.new('hi mom')
@@ -142,19 +142,19 @@ END_HTML
       assert_match /hi mom/, premailer.to_inline_css
     end
   end
-  
+
   def test_initialize_can_accept_html_string
     [:nokogiri, :hpricot].each do |adapter|
       premailer = Premailer.new('<p>test</p>', :with_html_string => true, :adapter => adapter)
       assert_match /test/, premailer.to_inline_css
     end
   end
-  
+
   def test_remove_ids
     html = <<END_HTML
     <html> <head> <style type="text/css"> #remove { color:blue; } </style> </head>
     <body>
-		<p id="remove"><a href="#keep">Test</a></p> 
+		<p id="remove"><a href="#keep">Test</a></p>
 		<p id="keep">Test</p>
 		</body> </html>
 END_HTML
@@ -169,7 +169,7 @@ END_HTML
   	  assert_not_nil doc.at("\##{hashed_id}")
   	end
   end
-  
+
   def test_carriage_returns_as_entities
     html = <<-html
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -183,14 +183,14 @@ END_HTML
       assert_match /\r/, pm.to_inline_css
     end
   end
-  
-  
+
+
   def test_advanced_selectors
     remote_setup('base.html', :adapter => :nokogiri)
     assert_match /italic/, @doc.at('h2 + h3')['style']
     assert_match /italic/, @doc.at('p[attr~=quote]')['style']
     assert_match /italic/, @doc.at('ul li:first-of-type')['style']
-    
+
     remote_setup('base.html', :adapter => :hpricot)
     assert_match /italic/, @doc.at('p[@attr~="quote"]')['style']
     assert_match /italic/, @doc.at('ul li:first-of-type')['style']
@@ -231,5 +231,13 @@ END_HTML
     local_setup('base.html', :adapter => :nokogiri, :include_style_tags => false)
     assert_match /1\.231/, @doc.at('body').attributes['style'].to_s
     assert_no_match /display: block/, @doc.at('#iphone').attributes['style'].to_s
+  end
+
+  def test_inputencoding
+    html_special_characters = "Ää, Öö, Üü, &nbsp; &gt; &lt;".encode("UTF-8")
+    expected_html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\" \"http://www.w3.org/TR/REC-html40/loose.dtd\">\n<html><body><p>" + html_special_characters + "</p></body></html>\n"
+
+    pm = Premailer.new(html_special_characters, :with_html_string => true, :adapter => :nokogiri, :inputencoding => "UTF-8")
+    assert_equal expected_html, pm.to_inline_css
   end
 end
